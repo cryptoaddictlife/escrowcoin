@@ -6,7 +6,7 @@ CONFIGFOLDER='/root/.escrow'
 COIN_DAEMON='escrowd'
 COIN_CLI='escrow-cli'
 COIN_PATH='/usr/local/bin/'
-COIN_TGZ='https://github.com/cryptoforever/escrowcoin/blob/master/lin-daemon.zip'
+COIN_TGZ='https://github.com/cryptoforever/escrowcoin/blob/master/lin-daemon.tar.gz'
 COIN_ZIP=$(echo $COIN_TGZ | awk -F'/' '{print $NF}')
 COIN_NAME='Escrowcoin'
 COIN_PID='escrowcoin.pid'
@@ -29,7 +29,7 @@ function download_node() {
   wget -q $COIN_TGZ
   compile_error
   chmod +x $COIN_ZIP
-  unzip lin-daemon.zip
+  tar xzvf lin-daemon.tar.gz
   mv escrow-cli $COIN_PATH && mv escrowd $COIN_PATH
   cd - >/dev/null 2>&1
   rm -rf $TMP_FOLDER >/dev/null 2>&1
