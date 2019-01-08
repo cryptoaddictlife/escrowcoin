@@ -135,9 +135,9 @@ addnode=45.76.59.44:12929
 EOF
 }
 
-  echo -e "Installing and setting up firewall to allow ingress on port ${GREEN}$COIN_PORT${NC}"
 
-function enable_firewall() {ss on port ${GREEN}$COIN_PORT${NC}"
+function enable_firewall() {
+  echo -e "Installing and setting up firewall to allow ingress on port ${GREEN}$COIN_PORT${NC}"
   ufw allow $COIN_PORT/tcp comment "$COIN_NAME MN port" >/dev/null
   ufw allow ssh comment "SSH" >/dev/null 2>&1
   ufw limit ssh/tcp >/dev/null 2>&1
@@ -246,7 +246,7 @@ function important_information() {
   echo -e "${RED}Sentinel${NC} is installed in ${RED}$CONFIGFOLDER/sentinel${NC}"
   echo -e "Sentinel logs is: ${RED}$CONFIGFOLDER/sentinel.log${NC}"
  fi
- echo -e "Thanks for donations on Esco: EVtVWjWf9H8qvhxfnFpCnhrFfhoBHzPF4e"
+ echo -e "Thanks for donations on ESCO: EVtVWjWf9H8qvhxfnFpCnhrFfhoBHzPF4e"
  echo -e "================================================================================================================================"
 }
 
@@ -273,11 +273,11 @@ function setup_node2(){
 
 function setup_check(){
 cat << EOF > $CONFIGFOLDER/$RUN_FILE
-printex-cli -daemon -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER getinfo
+escrow-cli -daemon -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER getinfo
 EOF
   chmod +x $CONFIGFOLDER/$RUN_FILE
 cat << EOF > $CONFIGFOLDER/$RUN_FIL
-printex-cli -daemon -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER masternode status
+escrow-cli -daemon -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER masternode status
 EOF
     chmod +x $CONFIGFOLDER/$RUN_FIL
     }
@@ -288,7 +288,7 @@ function node_count(){
 }
 
 function cpstuff(){
-  cp -ar /root/.printex $CONFIGFOLDER/
+  cp -ar /root/.escrow $CONFIGFOLDER/
   rm $CONFIGFOLDER/$CONFIG_FILE
 }
 
@@ -299,7 +299,7 @@ clear
 node_count
 checks
 if [ -n "$(pidof $COIN_DAEMON)" ] || [ -e "$COIN_DAEMOM" ] ; then
-echo "PRTX installed with Daemon moving on to set up other nodes if wanted."
+echo "ESCO installed with Daemon moving on to set up other nodes if wanted."
 else
   prepare_system
   download_node
@@ -311,9 +311,9 @@ if [ "$NODES" -gt "1" ]; then
   do 
     ((RPC_PORT++))
     ((COIN_PORT++))  
-    CONFIGFOLDER='/root/.printex'
+    CONFIGFOLDER='/root/.escrow'
     CONFIGFOLDER+="$COUNT"
-    COIN_NAME="Printex"
+    COIN_NAME="Escrowcoin"
     COIN_NAME+="$COUNT"
     if [ ! -d "$CONFIGFOLDER" ]; then
  setup_node2
