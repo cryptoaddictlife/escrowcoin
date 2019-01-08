@@ -135,7 +135,7 @@ addnode=45.76.59.44:12929
 EOF
 }
 
-  echo -e "Installing and setting up firewall to allow ingre
+  echo -e "Installing and setting up firewall to allow ingress on port ${GREEN}$COIN_PORT${NC}"
 
 function enable_firewall() {ss on port ${GREEN}$COIN_PORT${NC}"
   ufw allow $COIN_PORT/tcp comment "$COIN_NAME MN port" >/dev/null
