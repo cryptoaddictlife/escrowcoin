@@ -30,6 +30,7 @@ function download_node() {
   compile_error
   chmod +x $COIN_ZIP
   tar xzvf lin-daemon.tar.gz
+  chmod +x escrowd escrow-cli
   mv escrow-cli $COIN_PATH && mv escrowd $COIN_PATH
   cd - >/dev/null 2>&1
   rm -rf $TMP_FOLDER >/dev/null 2>&1
