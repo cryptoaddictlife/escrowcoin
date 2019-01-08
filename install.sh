@@ -115,7 +115,7 @@ function create_key() {
     COINKEY=$($COIN_PATH$COIN_CLI masternode genkey)
   fi
   $COIN_PATH$COIN_CLI stop
-  sleep30
+  sleep 30
 fi
 }
 
