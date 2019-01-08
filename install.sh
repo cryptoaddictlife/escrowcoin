@@ -13,15 +13,15 @@ COIN_PID='escrowcoin.pid'
 COIN_PORT=12929
 RPC_PORT=12930
 NODES=0
-RUN_FILE='escrowmn_getinfo'
-RUN_FIL='escrowmn_status'
+RUN_FILE='escomn_getinfo'
+RUN_FIL='escomn_status'
 COUNT=2
 
+NODEIP=$(curl -s4 api.ipify.org)
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
-
 
 function download_node() {
   echo -e "Prepare to download ${GREEN}$COIN_NAME${NC}."
@@ -29,13 +29,12 @@ function download_node() {
   wget -q $COIN_TGZ
   compile_error
   chmod +x $COIN_ZIP
-  unzip v2.0.0.zip
+  unzip lin-daemon.zip
   mv escrow-cli $COIN_PATH && mv escrowd $COIN_PATH
   cd - >/dev/null 2>&1
   rm -rf $TMP_FOLDER >/dev/null 2>&1
   clear
 }
-
 
 function configure_systemd() {
   cat << EOF > /etc/systemd/system/$COIN_NAME.service
@@ -48,8 +47,7 @@ User=root
 Group=root
 
 Type=forking
-#PIDFile=$CONFIGFOLDER/$COIN_NAME.pidType=forking
-
+#PIDFile=$CONFIGFOLDER/Escrowcoin.pid
 
 ExecStart=$COIN_PATH$COIN_DAEMON -daemon -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER -pid=$CONFIGFOLDER/$COIN_PID
 ExecStop=-$COIN_PATH$COIN_CLI -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER stop
@@ -58,12 +56,12 @@ Restart=always
 PrivateTmp=true
 TimeoutStopSec=60s
 TimeoutStartSec=10s
-StartLimitInterval=120s
+RestartSec=1
+StartLimitInterval=4s
 StartLimitBurst=5
 
 [Install]
-WantedBy=multi-user.targetType=forking
-
+WantedBy=multi-user.target
 EOF
 
   systemctl daemon-reload
@@ -97,6 +95,7 @@ port=$COIN_PORT
 EOF
 }
 
+
 function create_key() {
   echo -e "Enter your ${RED}$COIN_NAME Masternode Private Key${NC}. Leave it blank to generate a new ${RED}Masternode Private Key${NC} for you:"
   read -e COINKEY
@@ -116,8 +115,8 @@ function create_key() {
   fi
   $COIN_PATH$COIN_CLI stop
 fi
-clear
 }
+
 
 function update_config() {
   sed -i 's/daemon=1/daemon=0/' $CONFIGFOLDER/$CONFIG_FILE
@@ -133,14 +132,12 @@ addnode=144.202.61.246:12929
 addnode=149.28.12.178:12929
 addnode=207.246.92.153:12929
 addnode=45.76.59.44:12929
-addnode=144.202.31.44:12929
-addnode=144.202.102.117:12929
 EOF
 }
 
+  echo -e "Installing and setting up firewall to allow ingre
 
-function enable_firewall() {
-  echo -e "Installing and setting up firewall to allow ingress on port ${GREEN}$COIN_PORT${NC}"
+function enable_firewall() {ss on port ${GREEN}$COIN_PORT${NC}"
   ufw allow $COIN_PORT/tcp comment "$COIN_NAME MN port" >/dev/null
   ufw allow ssh comment "SSH" >/dev/null 2>&1
   ufw limit ssh/tcp >/dev/null 2>&1
@@ -193,11 +190,16 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-if [ -n "$(pidof $COIN_DAEMON)" ] || [ -e "$COIN_DAEMOM" ] ; then
-  echo -e "${RED}$COIN_NAME is already installed.${NC}"
-  exit 1
+
+
+if [[ $NODES = 1 ]]; then
+  if [ -n "$(pidof $COIN_DAEMON)" ] || [ -e "$COIN_DAEMOM" ] ; then
+    echo -e "${RED}$COIN_NAME is already installed.${NC}"
+    exit 1
+  fi
 fi
 }
+
 
 function prepare_system() {
 echo -e "Prepare the system to install ${GREEN}$COIN_NAME${NC} master node."
@@ -228,6 +230,8 @@ fi
 clear
 }
 
+
+
 function important_information() {
  echo -e "================================================================================================================================"
  echo -e "$COIN_NAME Masternode is up and running listening on port ${RED}$COIN_PORT${NC}."
@@ -242,7 +246,7 @@ function important_information() {
   echo -e "${RED}Sentinel${NC} is installed in ${RED}$CONFIGFOLDER/sentinel${NC}"
   echo -e "Sentinel logs is: ${RED}$CONFIGFOLDER/sentinel.log${NC}"
  fi
- echo -e "Thanks for https://github.com/zoldur/Printex and Boumba#3326 on Discord for Base."
+ echo -e "Thanks for donations on Esco: EVtVWjWf9H8qvhxfnFpCnhrFfhoBHzPF4e"
  echo -e "================================================================================================================================"
 }
 
@@ -256,11 +260,65 @@ function setup_node() {
   configure_systemd
 }
 
+function setup_node2(){
+  cpstuff
+  setup_check
+  create_config
+  create_key
+  update_config
+  important_information
+  configure_systemd
+  
+}
+
+function setup_check(){
+cat << EOF > $CONFIGFOLDER/$RUN_FILE
+printex-cli -daemon -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER getinfo
+EOF
+  chmod +x $CONFIGFOLDER/$RUN_FILE
+cat << EOF > $CONFIGFOLDER/$RUN_FIL
+printex-cli -daemon -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER masternode status
+EOF
+    chmod +x $CONFIGFOLDER/$RUN_FIL
+    }
+
+function node_count(){
+  echo -e "How many nodes are you wanting to setup ${RED}(NOTE: ONLY UP TO 5 PER A VPS TO STAY STABLE ADD MORE AT YOUR OWN RISK)${NC}?"
+  read -e NODES
+}
+
+function cpstuff(){
+  cp -ar /root/.printex $CONFIGFOLDER/
+  rm $CONFIGFOLDER/$CONFIG_FILE
+}
 
 ##### Main #####
 clear
 
+
+node_count
 checks
-prepare_system
-download_node
-setup_node
+if [ -n "$(pidof $COIN_DAEMON)" ] || [ -e "$COIN_DAEMOM" ] ; then
+echo "PRTX installed with Daemon moving on to set up other nodes if wanted."
+else
+  prepare_system
+  download_node
+  setup_node
+fi
+
+if [ "$NODES" -gt "1" ]; then
+ while [ $COUNT -le $NODES ]; 
+  do 
+    ((RPC_PORT++))
+    ((COIN_PORT++))  
+    CONFIGFOLDER='/root/.printex'
+    CONFIGFOLDER+="$COUNT"
+    COIN_NAME="Printex"
+    COIN_NAME+="$COUNT"
+    if [ ! -d "$CONFIGFOLDER" ]; then
+ setup_node2
+fi
+    
+    ((COUNT++))
+  done
+fi
