@@ -1,19 +1,21 @@
 #!/bin/bash
 
 TMP_FOLDER=$(mktemp -d)
-CONFIG_FILE='printex.conf'
-CONFIGFOLDER='/root/.printex'
-COIN_DAEMON='printexd'
-COIN_CLI='printex-cli'
+CONFIG_FILE='escrow.conf'
+CONFIGFOLDER='/root/.escrow'
+COIN_DAEMON='escrowd'
+COIN_CLI='escrow-cli'
 COIN_PATH='/usr/local/bin/'
 COIN_TGZ='https://github.com/Printex-official/printex-core/releases/download/v1.0.0.0/lin-daemon.zip'
 COIN_ZIP=$(echo $COIN_TGZ | awk -F'/' '{print $NF}')
-COIN_NAME='Printex'
-COIN_PID='printex.pid'
-COIN_PORT=9797
-RPC_PORT=9898
-
-NODEIP=$(curl -s4 api.ipify.org)
+COIN_NAME='Escrowcoin'
+COIN_PID='escrowcoin.pid'
+COIN_PORT=12929
+RPC_PORT=12930
+NODES=0
+RUN_FILE='escrowmn_getinfo'
+RUN_FIL='escrowmn_status'
+COUNT=2
 
 
 RED='\033[0;31m'
@@ -27,8 +29,8 @@ function download_node() {
   wget -q $COIN_TGZ
   compile_error
   chmod +x $COIN_ZIP
-  unzip lin-daemon.zip
-  mv printex-cli $COIN_PATH && mv printexd $COIN_PATH
+  unzip v2.0.0.zip
+  mv escrow-cli $COIN_PATH && mv escrowd $COIN_PATH
   cd - >/dev/null 2>&1
   rm -rf $TMP_FOLDER >/dev/null 2>&1
   clear
@@ -46,7 +48,8 @@ User=root
 Group=root
 
 Type=forking
-#PIDFile=$CONFIGFOLDER/$COIN_NAME.pid
+#PIDFile=$CONFIGFOLDER/$COIN_NAME.pidType=forking
+
 
 ExecStart=$COIN_PATH$COIN_DAEMON -daemon -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER -pid=$CONFIGFOLDER/$COIN_PID
 ExecStop=-$COIN_PATH$COIN_CLI -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER stop
@@ -59,7 +62,8 @@ StartLimitInterval=120s
 StartLimitBurst=5
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=multi-user.targetType=forking
+
 EOF
 
   systemctl daemon-reload
@@ -124,11 +128,13 @@ maxconnections=256
 masternode=1
 externalip=$NODEIP:$COIN_PORT
 masternodeprivkey=$COINKEY
-addnode=118.184.105.17
-addnode=188.213.31.22
-addnode=45.76.230.226
-addnode=173.170.21.37
-addnode=seed.boumba.linkpc.net
+addnode=8.12.16.217:12929
+addnode=144.202.61.246:12929
+addnode=149.28.12.178:12929
+addnode=207.246.92.153:12929
+addnode=45.76.59.44:12929
+addnode=144.202.31.44:12929
+addnode=144.202.102.117:12929
 EOF
 }
 
@@ -237,7 +243,6 @@ function important_information() {
   echo -e "Sentinel logs is: ${RED}$CONFIGFOLDER/sentinel.log${NC}"
  fi
  echo -e "Thanks for https://github.com/zoldur/Printex and Boumba#3326 on Discord for Base."
- echo -e "Thanks for donations on PRTX: pCRNk4f3LK584LNrUudW5Rqb4Vkv4NiJqR"
  echo -e "================================================================================================================================"
 }
 
